@@ -1,0 +1,15 @@
+letras_posibles = ("A", "B", "C", "D", "E", "F", "G", "H", "I", "J")
+numeros_posibles = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+direcciones_posibles = ("abajo", "arriba", "derecha", "izquierda")
+ROJO = "\033[31m"
+VERDE = "\033[32m"
+AMARILLO = "\033[33m"
+FONDO_ROJO = "\033[41m"
+FONDO_VERDE = "\033[42m"
+FONDO_AMARILLO = "\033[43m"
+FONDO_AZUL = "\033[44m"
+DEFECTO = "\033[0m"
+NARANJA = "\033[33m"
+FONDO_NARANJA = "\033[43m"
+NEGRO   = "\033[30m"
+FONDO_NEGRO   = "\033[40m"
