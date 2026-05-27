@@ -1,8 +1,3 @@
-import sys
-from enum import Enum
-
-sys.setrecursionlimit(15000)
-
 class Queue:
     """
     Class representing a circular queue with a size limit.
@@ -202,9 +197,9 @@ class Node:
 
     def __str__(self):
         """
-        Returns a string representation of the node (its key).
+        Returns a string representation of the node (its data).
         """
-        return f"Word: {self.data} Lenght: {self.key}"
+        return f"{self.data}"
 
     def show(self, level=0, prefix="Root: ") -> None:
         indent = " " * (level * 4)
@@ -216,6 +211,9 @@ class Node:
             self.get_right().show(level + 1, prefix="R--- ")
 
     def height(self) -> int:
+        """
+        For each node explored it adds one to the height and follows the path with the higher height between left and right
+        """
         if self.get_left() is None:
             left_depth = -1
         else:
@@ -228,7 +226,11 @@ class Node:
         
         return 1 + max(left_depth, right_depth)
     
-    def find_node(self, key) -> "Node":
+    def find_node(self, key:int) -> "Node":
+        """
+        Uses the structure of the Binary Trees to see in what place should the searched key be and returns the node
+        If it doesn't find it it returns None
+        """
         if self.key == key:
             return self
         if key > self.key and self.get_right() is not None:
@@ -238,6 +240,10 @@ class Node:
         return None
     
     def successor(self) -> "Node":
+        """
+        Finds the node with the following existing key and returns it
+        If it doesn't find it it returns None
+        """
         right = self.get_right()
         if right is not None:
             return right.min_key()
@@ -252,18 +258,27 @@ class Node:
         return parent
 
     def min_key(self) -> "Node":
+        """
+        Goes always left to find the lower key node and returns it
+        """
         current = self
         while current.get_left() is not None:
             current = current.get_left()
         return current
     
     def max_key(self) -> "Node":
+        """
+        Goes always right to find the maximum key node and returns it
+        """
         current = self
         while current.get_right() is not None:
             current = current.get_right()
         return current
         
     def in_order_show(self) -> None:
+        """
+        Prints the nodes in key order
+        """
         if self.get_left() is not None:
             self.get_left().in_order_show()
         print(self)
@@ -271,6 +286,9 @@ class Node:
             self.get_right().in_order_show()
 
     def pre_order_show(self) -> None:
+        """
+        Prints the nodes in order root-left subtree-right subtree
+        """
         print(self)
         if self.get_left() is not None:
             self.get_left().pre_order_show()
@@ -278,6 +296,9 @@ class Node:
             self.get_right().pre_order_show()
 
     def post_order_show(self) -> None:
+        """
+        Prints the nodes in order left subtree-right subtree-root
+        """
         if self.get_left() is not None:
             self.get_left().post_order_show()
         if self.get_right() is not None:
@@ -285,6 +306,10 @@ class Node:
         print(self)
 
     def level_order_show(self) -> None:
+        """
+        Prints the nodes in order by levels from left to right using a queue
+        We insert the sons of the node that we print and dequeue it until the queue is empty
+        """
         queue = Queue(max(1, 2 ** (self.height() + 1)))
         queue.enqueue(self)
         while not queue.is_empty():
@@ -296,6 +321,10 @@ class Node:
                 queue.enqueue(node.get_right())
 
     def number_descendants(self) -> int:
+        """
+        For each son that isn't None it adds one to the number of descentands (counter) and does it for the left and right recursively
+        Returns the number of descendants (counter)
+        """
         counter = 0
 
         if self.get_left() is not None:
@@ -307,6 +336,9 @@ class Node:
         return counter
         
     def number_leafs(self) -> int:
+        """
+        Identifies if the node is a leaf (None sons) and it adds one for each of this case
+        """
         counter = 0
 
         if self.get_left() is None and self.get_right() is None:
@@ -321,6 +353,14 @@ class Node:
         return counter
     
     def long_path(self) -> list:
+        """
+        It  checks if the left subtree has the bigger height or is the right one
+        It adds the one that has the bigger high to a list and, recursively it follows that path
+
+        If left is None it will always chose right and viceversa
+
+        It ends when it reaches a lead node
+        """
         if self.get_left() is None and self.get_right() is None:
             return []
 
@@ -334,7 +374,6 @@ class Node:
             return [self.get_left().data] + self.get_left().long_path()
         else:
             return [self.get_right().data] + self.get_right().long_path()
-
 
 class BinaryTree:
     def __init__(self):
@@ -439,8 +478,7 @@ class BinaryTree:
     def skew(self) -> bool:
         node = self.root
         if self.root is None:
-            print("Empty tree")
-            return False
+            return print("Empty tree")
 
         if node.get_left() is not None:
             height_left = node.get_left().height()
@@ -452,7 +490,7 @@ class BinaryTree:
         else:
             height_right = -1
 
-        return abs(height_right - height_left) <= 1
+        return abs(height_right - height_left) > 1
         
     def in_order(self) -> None:
         if self.root is None:
@@ -489,150 +527,115 @@ class BinaryTree:
             return []
         return [self.root.data] + self.root.long_path()
     
+    def paths_to_leaf_with_length(self, node:Node, remaining_edges:int, current_path:list[str] = None, results:list[list[str]] = None) -> list[list[str]]:
+        """
+        Returns all root-to-leaf paths with an exact length (in edges) equal
+        to remaining_edges at the beginning of the call.
 
-class Color(Enum):
-    RED = 0
-    BLACK = 1
+        Typical usage:
+        paths = paths_to_leaf_with_length(tree.root, 3)
 
-class RBNode:
-    def __init__(self, key, value=None, color=Color.RED):
-        # Pointer to parent, left, and right children
-        self._parent = None
-        self._left = None
-        self._right = None
-        # Key that identifies the node
-        self.key = key
-        # Additional data
-        self.data = value
-        # Color of the node
-        self.color = color
+        Parameters:
+        - node: current node (starts at the root)
+        - remaining_edges: number of edges left to reach the target length
+        - current_path: (internal) list storing the current path
+        - results: (internal) accumulator of valid paths
 
-    def is_red(self) -> bool:
+        Returns:
+        - List of paths; each path is a list of strings (str(node.data)).
         """
-        Checks if the node is red.
-        """
-        return self.color == Color.RED
+        if current_path is None:
+            current_path = []
+        if results is None:
+            results = []
 
-    def is_black(self) -> bool:
-        """
-        Checks if the node is black.
-        """
-        return self.color == Color.BLACK
+        if node is not None and remaining_edges >= 0:
+            if current_path == []:
+                current_path.append(node.data)
 
-    def set_red(self) -> None:
-        """
-        Sets the node color to red.
-        """
-        self.color = Color.RED
+            if remaining_edges == 0 and node.get_left() is None and node.get_right() is None:
+                add_solution(current_path, results)
+            else:
+                for next_node in (node.get_left(), node.get_right()):
+                    if not is_None(next_node):
+                        remaining_edges = add_to_path(next_node, remaining_edges, current_path)
+                        self.paths_to_leaf_with_length(next_node, remaining_edges, current_path, results)
+                        remaining_edges = undo_path(remaining_edges, current_path)
 
-    def set_black(self) -> None:
-        """
-        Sets the node color to black.
-        """
-        self.color = Color.BLACK
+        return results
 
-    def get_left(self) -> 'RBNode':
-        """
-        Gets the left child node.
-        """
-        return self._left
+def add_solution(current_path:list[str], results:list[list[str]]) -> None:
+    results.append(current_path[:])
 
-    def set_left(self, node) -> None:
-        """
-        Sets the left child node.
-        """
-        self._left = node
+def add_to_path(node:Node, remaining_edges:int, current_path:list[str]) -> int:
+    current_path.append(node.data)
+    return remaining_edges - 1
 
-    def get_right(self) -> 'RBNode':
-        """
-        Gets the right child node.
-        """
-        return self._right
+def undo_path(remaining_edges:int, current_path:list[str]) -> int:
+    current_path.pop()
+    return remaining_edges + 1
 
-    def set_right(self, node) -> None:
-        """
-        Sets the right child node.
-        """
-        self._right = node
+def is_None(node:Node) -> bool:
+    return node is None
 
-    def get_parent(self) -> 'RBNode':
-        """
-        Gets the parent node.
-        """
-        return self._parent
+if __name__ == "__main__":
+    tree = BinaryTree()
 
-    def set_parent(self, node) -> None:
-        """
-        Sets the parent node.
-        """
-        self._parent = node
+    print("INSERTANDO NODOS")
+    tree.insert_node(Node(10, "diez"))
+    tree.insert_node(Node(5, "cinco"))
+    tree.insert_node(Node(15, "quince"))
+    tree.insert_node(Node(3, "tres"))
+    tree.insert_node(Node(7, "siete"))
+    tree.insert_node(Node(12, "doce"))
+    tree.insert_node(Node(18, "dieciocho"))
 
-    def __str__(self):
-        """
-        Returns a string representation of the node, showing the key and color.
-        """
-        color_str = "R" if self.is_red() else "B"
-        return f"{self.key} ({color_str})"
+    print("\nARBOL")
+    tree.show()
 
-    def show(self, level=0, prefix="Root: "):
-        """
-        Displays the node and its descendants hierarchically, including color information.
-        """
-        indent = " " * (level * 4)
-        print(f"{indent}{prefix}{self}")
+    print("\nALTURA")
+    print(tree.height())
 
-        if self.get_left() is not None and self.get_left().get_left() is not None:
-            self.get_left().show(level + 1, prefix="L--- ")
-        if self.get_right() is not None and self.get_right().get_right() is not None:
-            self.get_right().show(level + 1, prefix="R--- ")
+    print("\nBUSQUEDA")
+    print(tree.find_node(7))
+    print(tree.find_node(20))
 
+    print("\nRECORRIDOS")
+    print("IN ORDER")
+    tree.in_order()
+    print("PRE ORDER")
+    tree.pre_order()
+    print("POST ORDER")
+    tree.post_order()
+    print("LEVEL ORDER")
+    tree.level_order()
 
-class RedBlackTree:
-    def __init__(self, root: RBNode = None):
-        self.NIL = RBNode(None)
-        self.NIL.set_black()
-        self.NIL.set_left(None)
-        self.NIL.set_right(None)
+    print("\nINFORMACION")
+    print("Numero de nodos:", tree.count_nodes_tree())
+    print("Numero de hojas:", tree.count_leafs())
+    print("Camino mas largo:", tree.longest_path())
+    print("Caminos de longitud 2:", tree.paths_to_leaf_with_length(tree.root, 2))
+    print("Skew:", tree.skew())
 
-        self.root = self.NIL
-        if root is not None:
-            self.insert(root.key, root.data)
-        
+    print("\nBORRADO HOJA (3)")
+    tree.delete_node(3)
+    tree.show()
 
-    def left_rotate(self, x: RBNode):
-        """
-        Performs a left rotation on the node x.
-        """
-        y = x.get_right()  # Set y
-        x.set_right(y.get_left())  # Turn y's left subtree into x's right subtree
-        if y.get_left() != self.NIL:
-            y.get_left().set_parent(x)  # Update parent of y's left subtree
+    print("\nBORRADO NODO CON UN HIJO (5)")
+    tree.delete_node(5)
+    tree.show()
 
-        y.set_parent(x.get_parent())  # Link y's parent to x's parent
-        if x.get_parent() is self.NIL:  # x was the root
-            self.root = y
-        elif x == x.get_parent().get_left():  # x was a left child
-            x.get_parent().set_left(y)
-        else:  # x was a right child
-            x.get_parent().set_right(y)
+    print("\nBORRADO NODO CON DOS HIJOS (10)")
+    tree.delete_node(10)
+    tree.show()
 
-        y.set_left(x)  # Put x on y's left
-        x.set_parent(y)
+    print("\nRECORRIDOS FINALES")
+    print("IN ORDER")
+    tree.in_order()
+    print("LEVEL ORDER")
+    tree.level_order()
 
-    def right_rotate(self, y: RBNode):
-        """
-        Performs a right rotation on the node y.
-        """
-        pass
-
-    def insert(self, key, value):
-        """
-        Inserts a node z into the Red-Black Tree.
-        """
-        pass
-
-    def insert_fixup(self, z: RBNode):
-        """
-        Fixes the Red-Black Tree properties after insertion.
-        """
-        pass
+    print("\nINFORMACION FINAL")
+    print("Numero de nodos:", tree.count_nodes_tree())
+    print("Numero de hojas:", tree.count_leafs())
+    print("Camino mas largo:", tree.longest_path())
